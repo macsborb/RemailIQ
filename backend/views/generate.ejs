@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <title>ProspectAI - Générer un Mail</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <link rel="stylesheet" href="https://unicons.iconscout.com/release/v2.1.9/css/unicons.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.0/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/css/styles.css">
+  <style>
+    body {
+      background-color: #1f2029;
+      color: #ffeba7;
+      font-family: 'Courier New', monospace;
+    }
+    .navbar-custom {
+      background-color: #1f2029;
+      border-bottom: 1px solid #444;
+    }
+    .navbar-custom .nav-link, .navbar-custom .navbar-brand {
+      color: #ffeba7;
+    }
+    .navbar-custom .nav-link:hover {
+      color: #c4c3ca;
+    }
+    .layout {
+      display: flex;
+    }
+    .sidebar {
+      width: 250px;
+      background-color: #2b2e38;
+      padding: 20px;
+      border-right: 2px solid #444;
+      height: 100vh;
+      overflow-y: auto;
+      transition: all 0.3s ease-in-out;
+    }
+    .sidebar-toggle-wrapper {
+      position: absolute;
+      top: 15px;
+      right: -45px;
+      z-index: 10;
+    }
+    .sidebar h5 {
+      color: #ffeba7;
+      margin-bottom: 20px;
+    }
+    .sidebar a {
+      display: block;
+      color: #c4c3ca;
+      text-decoration: none;
+      margin-bottom: 10px;
+    }
+    .sidebar a:hover {
+      color: #ffeba7;
+    }
+    .main-content {
+      flex-grow: 1;
+      padding: 40px;
+      transition: margin-left 0.3s;
+    }
+    .form-control, .btn-generate {
+      background-color: #2b2e38;
+      border: none;
+      color: #ffeba7;
+    }
+    .btn-generate {
+      background-color: #ffeba7;
+      color: #000;
+      font-weight: 600;
+    }
+    .btn-generate:hover {
+      background-color: #000;
+      color: #ffeba7;
+    }
+    .generated-email {
+      margin-top: 40px;
+      background-color: #2b2e38;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+    }
+    .emotion-selector button {
+      margin: 4px;
+      background-color: #2b2e38;
+      border: 1px solid #ffeba7;
+      color: #ffeba7;
+      border-radius: 6px;
+      padding: 5px 10px;
+      cursor: pointer;
+    }
+    .emotion-selector button.selected {
+      background-color: #ffeba7;
+      color: #000;
+    }
+    .size-selector button {
+      margin: 4px;
+      background-color: #2b2e38;
+      border: 1px solid #ffeba7;
+      color: #ffeba7;
+      border-radius: 6px;
+      padding: 5px 10px;
+      cursor: pointer;
+    }
+    .size-selector button.selected {
+      background-color: #ffeba7;
+      color: #000;
+    }
+    #ia-response {
+      white-space: pre-wrap;
+      color: #ffeba7;
+      font-size: 15px;
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg navbar-custom">
+    <div class="container">
+      <a class="navbar-brand" href="/dashboard">ProspectAI</a>
+      <div class="collapse navbar-collapse">
+        <ul class="navbar-nav mr-auto">
+          <li class="nav-item"><a class="nav-link" href="/dashboard">Dashboard</a></li>
+        </ul>
+        <form method="post" action="/logout">
+          <button type="submit" class="btn btn-outline-light">Se déconnecter</button>
+        </form>
+        <% if (outlookConnected) { %>
+          <span class="text-light ml-3">Connecté à : <%= outlookEmail %></span>
+        <% } else { %>
+          <form method="get" action="/outlook/login" class="ml-2">
+            <button type="submit" class="btn btn-outline-warning">Connecter Outlook</button>
+          </form>
+        <% } %>
+      </div>
+    </div>
+  </nav>
+
+  <div class="sidebar-toggle-wrapper" id="sidebarToggleWrapper">
+    <button id="toggleSidebar">≡</button>
+  </div>
+
+  <div class="layout">
+    <div class="sidebar" id="emailSidebar">
+      <h5>Boîte de réception</h5>
+      <div id="email-list">Chargement...</div>
+    </div>
+
+    <div class="main-content">
+      <h2>Générer un nouveau mail</h2>
+      <div class="generated-email">
+        <h5 id="mail-subject">(Sélectionne un mail à gauche)</h5>
+        <p id="mail-from"></p>
+        <div id="mail-body"><p><em>Aucun contenu pour le moment.</em></p></div>
+      </div>
+
+      <div class="generated-email">
+        <h5>Choisissez le ton de la réponse</h5>
+        <div class="emotion-selector" id="emotion-selector">
+          <button data-emotion="professionnelle">Professionnel</button>
+          <button data-emotion="gentille">Gentil</button>
+          <button data-emotion="amicale">Amical</button>
+          <button data-emotion="frustrée">Frustré</button>
+          <button data-emotion="formelle">Formel</button>
+          <button data-emotion="enthousiaste">Enthousiaste</button>
+        </div>
+        <div class="size-selector" id="size-selector">
+          <button data-emotion="petite">Petite</button>
+          <button data-emotion="moyenne">Moyenne</button>
+          <button data-emotion="grande">Grande</button>
+        </div>
+        <button id="generate-ia" class="btn btn-generate mt-4">Générer le mail</button>
+        <div id="ia-response" class="mt-4"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const sidebar = document.getElementById('emailSidebar')
+    const toggleBtn = document.getElementById('toggleSidebar')
+    toggleBtn.onclick = () => sidebar.classList.toggle('collapsed')
+
+    fetch('/outlook/emails')
+      .then(res => res.json())
+      .then(data => {
+        const container = document.getElementById('email-list')
+        if (!data || data.length === 0) {
+          container.innerHTML = '<p>Aucun email trouvé.</p>'
+          return
+        }
+        container.innerHTML = ''
+        data.forEach((msg, i) => {
+          const link = document.createElement('a')
+          link.href = '#'
+          link.innerHTML = `<strong>${msg.subject}</strong><br><small>${msg.from?.emailAddress?.name || 'Expéditeur inconnu'}</small>`
+          link.classList.add('email-item')
+          link.dataset.subject = msg.subject
+          link.dataset.from = msg.from?.emailAddress?.name || 'Expéditeur inconnu'
+          link.dataset.body = msg.body?.content || 'Pas de contenu'
+          link.addEventListener('click', e => {
+            e.preventDefault()
+            showEmailContent(link.dataset.body, link.dataset.subject, link.dataset.from)
+          })
+          container.appendChild(link)
+        })
+      })
+
+    function showEmailContent(content, subject, from) {
+      document.getElementById('mail-subject').textContent = subject || '(Sans objet)'
+      document.getElementById('mail-from').textContent = from ? 'De : ' + from : ''
+      document.getElementById('mail-body').innerHTML = content ? `<p>${content}</p>` : '<em>Aucun contenu pour ce mail.</em>'
+    }
+
+    const selectedEmotions = new Set()
+    document.querySelectorAll('#emotion-selector button').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (btn.classList.contains('selected')) {
+          btn.classList.remove('selected')
+          selectedEmotions.delete(btn.dataset.emotion)
+        } else if (selectedEmotions.size < 2) {
+          btn.classList.add('selected')
+          selectedEmotions.add(btn.dataset.emotion)
+        }
+      })
+    })
+
+    let selectedSize = null;
+    document.querySelectorAll('#size-selector button').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('#size-selector button').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        selectedSize = btn.dataset.emotion;
+      });
+    });
+
+    function typeEffect(element, text, speed = 20) {
+      let i = 0
+      element.innerHTML = ''
+      function typing() {
+        if (i < text.length) {
+          element.innerHTML += text.charAt(i++)
+          setTimeout(typing, speed)
+        }
+      }
+      typing()
+    }
+
+    document.getElementById('generate-ia').addEventListener('click', async () => {
+      const output = document.getElementById('ia-response')
+      output.innerHTML = '<em>Génération en cours...</em>'
+
+      const emotions = [...selectedEmotions].join(' et ')
+      const mailContent = document.getElementById('mail-body').innerText.trim() || 'Aucun contenu'
+      const size = selectedSize || 'courte'
+
+      const prompt = `Réponds à ce mail de façon ${emotions} et je veux une ${size} réponse  :\n\n"${mailContent}"`
+
+      try {
+        const res = await fetch('/mistral', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ context: prompt })
+        })
+        const data = await res.json()
+        typeEffect(output, data.response)
+      } catch (err) {
+        console.error(err)
+        output.innerHTML = '<span style="color:red">Erreur de génération</span>'
+      }
+    })
+  </script>
+</body>
+</html>

@@ -1,0 +1,8 @@
+{
+  "dependencies": {
+    "@microsoft/microsoft-graph-client": "^3.0.7",
+    "axios": "^1.9.0",
+    "isomorphic-fetch": "^3.0.0",
+    "simple-oauth2": "^5.1.0"
+  }
+}
