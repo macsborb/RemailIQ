@@ -25,6 +25,8 @@ app.set('views', path.join(__dirname, 'views'))
 
 app.use('/', authRoutes)
 
-app.listen(3000, () => {
-  console.log("Serveur lancé sur http://localhost:3000")
+const PORT = process.env.PORT || 3000
+
+app.listen(PORT, () => {
+  console.log(`Serveur lancé sur http://localhost:${PORT}`)
 })
