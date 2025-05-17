@@ -7,53 +7,42 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Node.js
+      - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '22.x'
 
-      - name: Install dependencies in frontend/
-        working-directory: ./frontend
+      - name: Install dependencies
+        working-directory: frontend
         run: npm install
 
-      - name: Zip frontend folder only
+      - name: Zip deployment package
         run: cd frontend && zip -r ../release.zip .
 
-      - name: Upload build artifact
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: node-frontend
+          name: node-app
           path: release.zip
 
-  deploy:
-    runs-on: ubuntu-latest
-    needs: build
-    environment:
-      name: 'Production'
-      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
-
-    steps:
       - name: Download artifact
         uses: actions/download-artifact@v4
         with:
-          name: node-frontend
+          name: node-app
 
-      - name: Unzip for deployment
+      - name: Unzip artifact
         run: unzip release.zip
 
       - name: Deploy to Azure Web App
-        id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
         with:
           app-name: 'ProspectAI'
           slot-name: 'Production'
-          package: .
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_582845C808EE4F5E819D4FA4693B6AA7 }}
+          package: .
