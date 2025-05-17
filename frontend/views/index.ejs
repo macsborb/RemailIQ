@@ -60,6 +60,24 @@
       margin-bottom: 15px;
       color: #ffeba7;
     }
+    .popup-success {
+      position: relative;
+      top: 70px; /* ajusté pour être sous la navbar */
+      width: 100%;
+      background-color: #28a745;
+      color: white;
+      padding: 20px;
+      text-align: center;
+      font-weight: bold;
+      z-index: 999;
+      display: none;
+      opacity: 0;
+      transition: opacity 0.5s ease-in-out;
+    }
+    .popup-success.show {
+      display: block;
+      opacity: 1;
+    }
   </style>
 </head>
 <body>
@@ -76,6 +94,7 @@
       </div>
     </div>
   </nav>
+ 
 
   <section class="section-intro" id="about">
     <div class="container">
@@ -84,7 +103,6 @@
       <img src="/img/ai-email.png" alt="Illustration AI" class="img-fluid intro-image">
     </div>
   </section>
-
   <section class="features" id="features">
     <div class="feature">
       <i class="uil uil-envelope-alt"></i>
@@ -107,6 +125,9 @@
     <% if (typeof error !== 'undefined' && error) { %>
         <div class="alert alert-danger mt-4"><%= error %></div>
     <% } %>
+    <div id="success-popup" class="popup-success">
+      ✅ Votre compte a bien été créé. Vous pouvez maintenant vous connecter.
+    </div>
 
     <div class="section">
 		<div class="container">
@@ -140,27 +161,35 @@
 									<div class="center-wrap">
 										<div class="section text-center">
 											<h4 class="mb-3 pb-3">Sign Up</h4>
-											<form method="post" action="/register">
-                        <div class="form-group">
-                          <input type="email" id="signup-mail" name="email" class="form-style" placeholder="Email" required>
-                          <i class="input-icon uil uil-at"></i>
+											<form id="register-form" method="post" action="/register">
+                        <div id="step1">
+                          <div class="form-group">
+                            <input type="email" id="reg-email" name="email" class="form-style" placeholder="Email" required>
+                            <i class="input-icon uil uil-at"></i>
+                          </div>
+                          <div class="form-group mt-2">
+                            <input type="password" id="reg-password" name="password" class="form-style" placeholder="Password" required>
+                            <i class="input-icon uil uil-lock-alt"></i>
+                          </div>
+                          <div class="form-group mt-2">
+                            <input type="password" id="reg-confirm" name="confirm_password" class="form-style" placeholder="Confirmez le mot de passe" required>
+                            <i class="input-icon uil uil-lock-alt"></i>
+                          </div>
+                          <div class="form-group mt-3">
+                            <button type="button" class="btn btn-warning" onclick="goToStep2()">Suivant</button>
+                          </div>
                         </div>
-                        <div class="form-group mt-2">
-                          <input type="password" name="password" class="form-style" placeholder="Password" required>
-                          <i class="input-icon uil uil-lock-alt"></i>
+
+                        <div id="step2" style="display: none;">
+                          <p class="text-light">Un code de vérification a été envoyé à <span id="confirm-email" class="font-weight-bold"></span>. Veuillez le saisir ci-dessous :</p>
+                          <div class="form-group mt-3">
+                            <input type="text" name="email_code" class="form-style" placeholder="Code reçu par email" required>
+                            <i class="input-icon uil uil-key-skeleton"></i>
+                          </div>
+                          <div class="form-group mt-3">
+                            <button type="button" class="btn btn-success" onclick="submitRegister()">Register</button>
+                          </div>
                         </div>
-                        <div class="form-group mt-2">
-                          <input type="password" name="confirm_password" class="form-style" placeholder="Confirmez le mot de passe" required>
-                          <i class="input-icon uil uil-lock-alt"></i>
-                        </div>
-                        <div class="form-group mt-2">
-                          <button type="button" class="btn btn-sm btn-warning" onclick="sendVerificationCode()">Envoyer le code de vérification</button>
-                        </div>
-                        <div class="form-group mt-2">
-                          <input type="text" name="email_code" class="form-style" placeholder="Code reçu par email" required>
-                          <i class="input-icon uil uil-key-skeleton"></i>
-                        </div>
-                        <button class="btn mt-4">Register</button>
                       </form>
 										</div>
 			      					</div>
@@ -175,6 +204,126 @@
 	</div>
   </div>
   <script>
+    function submitRegister() {
+      const email = document.querySelector("#reg-email").value
+      const password = document.querySelector("#reg-password").value
+      const confirm_password = document.querySelector("#reg-confirm").value
+      const code = document.querySelector('input[name="email_code"]').value
+
+      fetch('/verify-code', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, code })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          // Submit real form to create account
+          const form = document.getElementById('register-form')
+
+          // On ajoute dynamiquement les inputs masqués nécessaires
+          const hidden1 = document.createElement('input')
+          hidden1.type = 'hidden'
+          hidden1.name = 'email'
+          hidden1.value = email
+          form.appendChild(hidden1)
+
+          const hidden2 = document.createElement('input')
+          hidden2.type = 'hidden'
+          hidden2.name = 'password'
+          hidden2.value = password
+          form.appendChild(hidden2)
+
+          const hidden3 = document.createElement('input')
+          hidden3.type = 'hidden'
+          hidden3.name = 'confirm_password'
+          hidden3.value = confirm_password
+          form.appendChild(hidden3)
+
+          const hidden4 = document.createElement('input')
+          hidden4.type = 'hidden'
+          hidden4.name = 'email_code'
+          hidden4.value = code
+          form.appendChild(hidden4)
+
+          fetch('/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              email,
+              password,
+              confirm_password,
+              email_code: code
+            })
+          })
+          .then(res => res.json())
+          .then(data => {
+            if (data.success) {
+              const popup = document.getElementById('success-popup')
+              popup.classList.add('show')
+              popup.style.display = 'block'
+
+              popup.scrollIntoView({ behavior: 'smooth', block: 'center' })
+              document.getElementById('step2').style.display = 'none'
+
+              document.getElementById("register-form").reset()
+              document.getElementById("step1").style.display = "block"
+
+              setTimeout(() => {
+                popup.classList.remove('show')
+                popup.style.display = 'none'
+              }, 5000)
+            }
+            else {
+              alert(data.error || 'Erreur lors de l’enregistrement.')
+            }
+          })
+        } else {
+          alert(data.error || 'Code incorrect.')
+        }
+      })
+      .catch(() => alert("Erreur réseau lors de la vérification du code."))
+    }
+    function goToStep2() {
+      const email = document.querySelector("#reg-email").value
+      const password = document.querySelector("#reg-password").value
+      const confirm = document.querySelector("#reg-confirm").value
+
+      if (!email || !password || !confirm) return alert("Veuillez remplir tous les champs")
+      if (password !== confirm) return alert("Les mots de passe ne correspondent pas")
+
+      // Étape 1 : vérifie si email déjà utilisé
+      fetch('/check-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.exists) {
+          return alert("Cette adresse e-mail est déjà utilisée.")
+        }
+
+        // Étape 2 : envoie du code
+        return fetch('/send-code', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email })
+        })
+      })
+      .then(res => res?.json?.())
+      .then(data => {
+        if (data?.success) {
+          document.getElementById("step1").style.display = "none"
+          document.getElementById("step2").style.display = "block"
+          document.getElementById("confirm-email").innerText = email
+        } else if (data?.error) {
+          alert(data.error)
+        }
+      })
+      .catch(() => alert("Erreur réseau"))
+    }
+
     function sendVerificationCode() {
       const email = document.querySelector("#signup-mail")?.value
       if (!email) return alert("Veuillez entrer une adresse email")

@@ -70,19 +70,28 @@ router.post('/register', async (req, res) => {
       return res.render('index', { error: 'Code expiré, recommencez.' })
     }
 
-    // Vérifie que l’email n’est pas déjà utilisé
-    const existing = await pool.query('SELECT * FROM users WHERE email = $1', [email])
-    if (existing.rows.length > 0) {
-      return res.render('index', { error: 'Email déjà utilisé' })
-    }
-
     const hash = await bcrypt.hash(password, 10)
     await pool.query('INSERT INTO users (email, password) VALUES ($1, $2)', [email, hash])
 
-    res.redirect('/dashboard')
+    res.json({ success: true })
   } catch (err) {
     console.error('❌ Erreur SQL lors de l\'inscription :', err.message)
     res.render('index', { error: 'Erreur serveur' })
+  }
+})
+
+router.post('/check-email', async (req, res) => {
+  const { email } = req.body
+  try {
+    const { rows } = await pool.query('SELECT 1 FROM users WHERE email = $1', [email])
+    if (rows.length > 0) {
+      return res.json({ exists: true })
+    } else {
+      return res.json({ exists: false })
+    }
+  } catch (err) {
+    console.error('Erreur check-email :', err)
+    return res.status(500).json({ error: 'Erreur serveur' })
   }
 })
 
