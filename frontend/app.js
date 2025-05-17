@@ -5,7 +5,7 @@ const authRoutes = require('./routes/auth')
 const outlookRoutes = require('./routes/outlook')
 
 const generateRoutes = require('./routes/generate')
-const mistralRoute = require('./routes/api_mistral');
+const mistralRoute = require('./routes/api_mistral')
 const app = express()
 
 app.use(session({
@@ -13,8 +13,10 @@ app.use(session({
   resave: false,
   saveUninitialized: false
 }))
-app.use(express.json());
-app.use(mistralRoute);
+app.use(express.json())
+app.use('/', require('./routes/verify_code'))         
+app.use('/', require('./routes/send_code'))         
+app.use(mistralRoute)
 app.use(outlookRoutes)
 app.use(generateRoutes)
 app.use(express.static(path.join(__dirname, 'public')))

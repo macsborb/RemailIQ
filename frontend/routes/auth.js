@@ -47,23 +47,45 @@ router.post('/login', async (req, res) => {
 })
 
 // Inscription depuis formulaire sur page d'accueil
-// router.post('/register', async (req, res) => {
-//   const { email, password } = req.body
-//   try {
-//     const existing = await pool.query('SELECT * FROM users WHERE email = $1', [email])
-//     if (existing.rows.length > 0) {
-//       return res.render('index', { error: 'Email déjà utilisé' })
-//     }
+router.post('/register', async (req, res) => {
+  const { email, password, confirm_password, email_code } = req.body
 
-//     const hash = await bcrypt.hash(password, 10)
-//     await pool.query('INSERT INTO users (email, password) VALUES ($1, $2)', [email, hash])
+  if (password !== confirm_password) {
+    return res.render('index', { error: 'Les mots de passe ne correspondent pas' })
+  }
 
-//     res.redirect('/dashboard')
-//   } catch (err) {
-//     console.error('❌ Erreur SQL lors de l\'inscription :', err.message)
-//     res.render('index', { error: 'Erreur serveur' })
-//   }
-// })
+  try {
+    // Vérifie que le code email correspond à celui en base et qu’il n’est pas expiré
+    const verif = await pool.query(
+      'SELECT * FROM email_verifications WHERE email = $1',
+      [email]
+    )
+
+    if (verif.rows.length === 0 || verif.rows[0].code !== email_code) {
+      return res.render('index', { error: 'Code de vérification invalide' })
+    }
+
+    const now = new Date()
+    if (now > new Date(verif.rows[0].expires_at)) {
+      return res.render('index', { error: 'Code expiré, recommencez.' })
+    }
+
+    // Vérifie que l’email n’est pas déjà utilisé
+    const existing = await pool.query('SELECT * FROM users WHERE email = $1', [email])
+    if (existing.rows.length > 0) {
+      return res.render('index', { error: 'Email déjà utilisé' })
+    }
+
+    const hash = await bcrypt.hash(password, 10)
+    await pool.query('INSERT INTO users (email, password) VALUES ($1, $2)', [email, hash])
+
+    res.redirect('/dashboard')
+  } catch (err) {
+    console.error('❌ Erreur SQL lors de l\'inscription :', err.message)
+    res.render('index', { error: 'Erreur serveur' })
+  }
+})
+
 
 // Page dashboard utilisateur connecté
 router.get('/dashboard', (req, res) => {
