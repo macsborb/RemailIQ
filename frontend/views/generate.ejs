@@ -141,8 +141,8 @@
 
   <div class="layout">
     <div class="sidebar" id="emailSidebar">
-      <h5>Boîte de réception</h5>
-      <div id="email-list">Chargement...</div>
+      <input type="text" id="search-bar" class="form-control mb-3" placeholder="Rechercher un contact...">
+      <div id="contact-list">Chargement...</div>
     </div>
 
     <div class="main-content">
@@ -175,6 +175,38 @@
   </div>
 
   <script>
+    let allContacts = []
+
+    fetch('/outlook/contacts')
+      .then(res => res.json())
+      .then(data => {
+        allContacts = data
+        renderContacts(data)
+      })
+
+    function renderContacts(list) {
+      const container = document.getElementById('contact-list')
+      container.innerHTML = ''
+      list.forEach(email => {
+        const link = document.createElement('a')
+        link.href = '#'
+        link.textContent = email
+        link.classList.add('email-item')
+        link.addEventListener('click', e => {
+          e.preventDefault()
+          loadThread(email)
+        })
+        container.appendChild(link)
+      })
+    }
+
+    document.getElementById('search-bar').addEventListener('input', (e) => {
+      const query = e.target.value.toLowerCase()
+      const filtered = allContacts.filter(c => c.includes(query))
+      renderContacts(filtered)
+    })
+
+
     const sidebar = document.getElementById('emailSidebar')
     const toggleBtn = document.getElementById('toggleSidebar')
     toggleBtn.onclick = () => sidebar.classList.toggle('collapsed')

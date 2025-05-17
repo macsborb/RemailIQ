@@ -86,4 +86,55 @@ router.get('/outlook/emails', async (req, res) => {
   }
 })
 
+router.get('/outlook/contacts', async (req, res) => {
+  const token = req.session.outlookToken?.access_token
+  if (!token) return res.status(401).json({ error: 'Not authenticated with Outlook' })
+
+  const client = Client.init({ authProvider: done => done(null, token) })
+
+  try {
+    const messages = await client.api('/me/messages?$top=100').select('from,toRecipients').get()
+
+    const contacts = new Set()
+    for (const msg of messages.value) {
+      if (msg.from?.emailAddress?.address)
+        contacts.add(msg.from.emailAddress.address.toLowerCase())
+      if (Array.isArray(msg.toRecipients)) {
+        msg.toRecipients.forEach(r => contacts.add(r.emailAddress.address.toLowerCase()))
+      }
+    }
+
+    res.json([...contacts])
+  } catch (err) {
+    console.error('Erreur récupération contacts:', err)
+    res.status(500).json({ error: 'Erreur récupération contacts' })
+  }
+})
+
+router.get('/outlook/thread/:email', async (req, res) => {
+  const token = req.session.outlookToken?.access_token
+  if (!token) return res.status(401).json({ error: 'Not authenticated with Outlook' })
+
+  const contact = req.params.email.toLowerCase()
+  const client = Client.init({ authProvider: done => done(null, token) })
+
+  try {
+    const messages = await client
+      .api(`/me/messages?$top=50&$orderby=receivedDateTime desc`)
+      .select('subject,body,from,toRecipients,receivedDateTime')
+      .get()
+
+    const thread = messages.value.filter(msg => {
+      const from = msg.from?.emailAddress?.address?.toLowerCase()
+      const to = msg.toRecipients?.map(r => r.emailAddress?.address?.toLowerCase()) || []
+      return from === contact || to.includes(contact)
+    })
+
+    res.json(thread)
+  } catch (err) {
+    console.error('Erreur récupération thread:', err)
+    res.status(500).json({ error: 'Erreur récupération thread' })
+  }
+})
+
 module.exports = router
