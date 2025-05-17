@@ -19,7 +19,7 @@ const oauth2 = new AuthorizationCode({
   }
 })
 
-const redirectUri = 'http://localhost:3000/outlook/callback'
+const redirectUri = 'https://prospectai-aqhmb7huf0bdfaga.canadacentral-01.azurewebsites.net/outlook/callback'
 
 // 🔐 Étape 1 : redirection vers Microsoft
 router.get('/outlook/login', (req, res) => {
