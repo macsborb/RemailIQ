@@ -2,15 +2,25 @@ const express = require('express')
 const bcrypt = require('bcrypt')
 const { Pool } = require('pg')
 const router = express.Router()
+require('dotenv').config()
+
 
 const pool = new Pool({
   host: process.env.DB_HOST,
   port: process.env.DB_PORT,
   user: process.env.DB_USER,
   password: process.env.DB_PASS,
-  database: process.env.DB_NAME
+  database: process.env.DB_NAME,
+  ssl: { rejectUnauthorized: false } 
 })
-
+console.log(process.env.DB_HOST)
+pool.query('SELECT NOW()', (err, res) => {
+  if (err) {
+    console.error('❌ Erreur de connexion à la base Supabase :', err.message)
+  } else {
+    console.log('✅ Connexion à Supabase réussie. Heure actuelle :', res.rows[0].now)
+  }
+})
 // Page d’accueil
 router.get('/', (req, res) => {
   res.render('index', { error: null })  // passe une variable error
@@ -31,6 +41,7 @@ router.post('/login', async (req, res) => {
     res.redirect('/dashboard')
 
   } catch (err) {
+    console.error('❌ Erreur SQL lors de l\'inscription :', err.message)
     res.render('index', { error: 'Erreur serveur' })
   }
 })
@@ -49,6 +60,7 @@ router.post('/register', async (req, res) => {
 
     res.redirect('/dashboard')
   } catch (err) {
+    console.error('❌ Erreur SQL lors de l\'inscription :', err.message)
     res.render('index', { error: 'Erreur serveur' })
   }
 })
