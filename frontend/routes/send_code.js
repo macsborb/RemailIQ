@@ -15,6 +15,66 @@ const pool = new Pool({
 
 const mail_sender_name = 'prospectai '
 const mail_sender = 'blancrobbie@gmail.com'
+const emailHtmlTemplate = `<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Code de vérification</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #1f2029;
+        color: #ffeba7;
+        padding: 20px;
+      }
+      .container {
+        max-width: 500px;
+        margin: auto;
+        background-color: #2b2e38;
+        border-radius: 10px;
+        padding: 30px;
+        border: 1px solid #444;
+      }
+      h1 {
+        text-align: center;
+        color: #ffeba7;
+      }
+      p {
+        font-size: 16px;
+        line-height: 1.5;
+        color:rgb(255, 255, 255);
+      }
+      .code-box {
+        text-align: center;
+        background-color: #ffeba7;
+        color: #1f2029;
+        font-size: 24px;
+        font-weight: bold;
+        padding: 15px;
+        border-radius: 8px;
+        margin: 20px auto;
+        width: fit-content;
+      }
+      .footer {
+        margin-top: 30px;
+        font-size: 12px;
+        text-align: center;
+        color: #aaa;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>ProspectAI</h1>
+      <p>Bonjour,</p>
+      <p>Voici votre code de vérification pour terminer la création de votre compte :</p>
+      <div class="code-box">{{CODE}}</div>
+      <p>Ce code expirera dans 10 minutes. Si vous n’êtes pas à l’origine de cette demande, vous pouvez ignorer cet email.</p>
+      <div class="footer">© 2025 ProspectAI. Tous droits réservés.</div>
+    </div>
+  </body>
+</html>`
+
 
 router.post('/send-code', async (req, res) => {
   const { email } = req.body
@@ -33,7 +93,7 @@ router.post('/send-code', async (req, res) => {
     const sendSmtpEmail = {
       to: [{ email }],
       subject: 'Votre code de vérification ProspectAI',
-      textContent: `Voici votre code : ${code}`,
+      htmlContent: emailHtmlTemplate.replace('{{CODE}}', code),
       sender: { name: mail_sender_name, email: mail_sender }
     }
 

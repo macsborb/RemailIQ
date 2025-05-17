@@ -11,7 +11,7 @@ router.post('/mistral', async (req, res) => {
     const response = await axios.post(
       'https://api.mistral.ai/v1/chat/completions',
       {
-        model: 'mistral-tiny', // ou mistral-small / mistral-medium
+        model: 'mistral-small-latest', // ou mistral-small / mistral-medium
         messages: [{ role: 'user', content: prompt }],
       },
       {
