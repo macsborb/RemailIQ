@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <title>ProspectAI</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <link rel="stylesheet" href="https://unicons.iconscout.com/release/v2.1.9/css/unicons.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.0/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/css/styles.css">
+  <style>
+    .navbar-custom {
+      background-color: #1f2029;
+      border-bottom: 1px solid #444;
+    }
+    .navbar-custom .nav-link, .navbar-custom .navbar-brand {
+      color: #ffeba7;
+    }
+    .navbar-custom .nav-link:hover {
+      color: #c4c3ca;
+    }
+    .section-intro {
+      padding: 100px 0;
+      text-align: center;
+      color: #ffeba7;
+    }
+    .section-intro h1 {
+      font-size: 48px;
+      font-weight: 700;
+    }
+    .section-intro p {
+      font-size: 18px;
+      max-width: 700px;
+      margin: 20px auto;
+    }
+    .intro-image {
+      max-width: 450px;
+      margin-top: 40px;
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+      border: 2px solid #ffeba7;
+    }
+    .features {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 2rem;
+      padding: 60px 0;
+    }
+    .feature {
+      background-color: #2b2e38;
+      border-radius: 12px;
+      padding: 30px;
+      color: #ffeba7;
+      max-width: 300px;
+      text-align: center;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+    }
+    .feature i {
+      font-size: 36px;
+      margin-bottom: 15px;
+      color: #ffeba7;
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg navbar-custom fixed-top">
+    <div class="container">
+      <a class="navbar-brand" href="#">ProspectAI</a>
+      <div class="collapse navbar-collapse">
+        <ul class="navbar-nav mr-auto">
+          <li class="nav-item"><a class="nav-link" href="#about">À propos</a></li>
+          <li class="nav-item"><a class="nav-link" href="#features">Fonctionnalités</a></li>
+          <li class="nav-item"><a class="nav-link" href="#contact">Contact</a></li>
+        </ul>
+        <a href="#auth" class="btn btn-outline-light">Se connecter</a>
+      </div>
+    </div>
+  </nav>
+
+  <section class="section-intro" id="about">
+    <div class="container">
+      <h1>Révolutionne ta prospection B2B</h1>
+      <p>ProspectAI est un assistant intelligent qui automatise la création de mails de prospection d'entreprise à entreprise. Moins de temps perdu, plus d'efficacité commerciale.</p>
+      <img src="/img/ai-email.png" alt="Illustration AI" class="img-fluid intro-image">
+    </div>
+  </section>
+
+  <section class="features" id="features">
+    <div class="feature">
+      <i class="uil uil-envelope-alt"></i>
+      <h4>Emails contextualisés</h4>
+      <p>Chaque mail est généré en fonction du profil de l'entreprise ciblée pour maximiser l'engagement.</p>
+    </div>
+    <div class="feature">
+      <i class="uil uil-brain"></i>
+      <h4>IA performante</h4>
+      <p>Notre moteur analyse les entreprises et génère des messages convaincants et personnalisés.</p>
+    </div>
+    <div class="feature">
+      <i class="uil uil-clock"></i>
+      <h4>Gain de temps</h4>
+      <p>Réduisez le temps passé par vos commerciaux à rédiger des mails grâce à l’automatisation intelligente.</p>
+    </div>
+  </section>
+
+  <div id="auth">
+    <% if (typeof error !== 'undefined' && error) { %>
+        <div class="alert alert-danger mt-4"><%= error %></div>
+    <% } %>
+
+    <div class="section">
+		<div class="container">
+			<div class="row full-height justify-content-center">
+				<div class="col-12 text-center align-self-center py-5">
+					<div class="section pb-5 pt-5 pt-sm-2 text-center">
+						<h6 class="mb-0 pb-3"><span>Log In </span><span>Sign Up</span></h6>
+			          	<input class="checkbox" type="checkbox" id="reg-log" name="reg-log"/>
+			          	<label for="reg-log"></label>
+						<div class="card-3d-wrap mx-auto">
+							<div class="card-3d-wrapper">
+								<div class="card-front">
+									<div class="center-wrap">
+										<div class="section text-center">
+											<h4 class="mb-4 pb-3">Log In</h4>
+											<form method="post" action="/login">
+												<div class="form-group">
+													<input type="email" name="email" class="form-style" placeholder="Email" required>
+													<i class="input-icon uil uil-at"></i>
+												</div>	
+												<div class="form-group mt-2">
+													<input type="password" name="password" class="form-style" placeholder="Password" required>
+													<i class="input-icon uil uil-lock-alt"></i>
+												</div>
+												<button class="btn mt-4">Login</button>
+											</form>
+										</div>
+			      					</div>
+			      				</div>
+								<div class="card-back">
+									<div class="center-wrap">
+										<div class="section text-center">
+											<h4 class="mb-3 pb-3">Sign Up</h4>
+											<form method="post" action="/register">
+												<div class="form-group">
+													<input type="email" name="email" class="form-style" placeholder="Email" required>
+													<i class="input-icon uil uil-at"></i>
+												</div>
+												<div class="form-group mt-2">
+													<input type="password" name="password" class="form-style" placeholder="Password" required>
+													<i class="input-icon uil uil-lock-alt"></i>
+												</div>
+												<button class="btn mt-4">Register</button>
+											</form>
+										</div>
+			      					</div>
+			      				</div>
+			      			</div>
+			      		</div>
+			      	</div>
+		      	</div>
+	      	</div>
+	    </div>
+    </div>
+	</div>
+  </div>
+</body>
+</html>
+
