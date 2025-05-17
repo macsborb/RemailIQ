@@ -21,6 +21,8 @@ const oauth2 = new AuthorizationCode({
 
 const redirectUri = 'https://prospectai-aqhmb7huf0bdfaga.canadacentral-01.azurewebsites.net/outlook/callback'
 
+console.log("Redirect URI envoyée:", redirectUri)
+
 // 🔐 Étape 1 : redirection vers Microsoft
 router.get('/outlook/login', (req, res) => {
   const authUrl = oauth2.authorizeURL({
@@ -29,8 +31,10 @@ router.get('/outlook/login', (req, res) => {
     state: 'secureRandomString',
     prompt: 'select_account'
   })
+  console.log('OAuth URL:', authUrl)
   res.redirect(authUrl)
 })
+
 
 // ✅ Étape 2 : callback OAuth
 router.get('/outlook/callback', async (req, res) => {
