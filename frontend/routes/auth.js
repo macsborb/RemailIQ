@@ -47,23 +47,23 @@ router.post('/login', async (req, res) => {
 })
 
 // Inscription depuis formulaire sur page d'accueil
-router.post('/register', async (req, res) => {
-  const { email, password } = req.body
-  try {
-    const existing = await pool.query('SELECT * FROM users WHERE email = $1', [email])
-    if (existing.rows.length > 0) {
-      return res.render('index', { error: 'Email déjà utilisé' })
-    }
+// router.post('/register', async (req, res) => {
+//   const { email, password } = req.body
+//   try {
+//     const existing = await pool.query('SELECT * FROM users WHERE email = $1', [email])
+//     if (existing.rows.length > 0) {
+//       return res.render('index', { error: 'Email déjà utilisé' })
+//     }
 
-    const hash = await bcrypt.hash(password, 10)
-    await pool.query('INSERT INTO users (email, password) VALUES ($1, $2)', [email, hash])
+//     const hash = await bcrypt.hash(password, 10)
+//     await pool.query('INSERT INTO users (email, password) VALUES ($1, $2)', [email, hash])
 
-    res.redirect('/dashboard')
-  } catch (err) {
-    console.error('❌ Erreur SQL lors de l\'inscription :', err.message)
-    res.render('index', { error: 'Erreur serveur' })
-  }
-})
+//     res.redirect('/dashboard')
+//   } catch (err) {
+//     console.error('❌ Erreur SQL lors de l\'inscription :', err.message)
+//     res.render('index', { error: 'Erreur serveur' })
+//   }
+// })
 
 // Page dashboard utilisateur connecté
 router.get('/dashboard', (req, res) => {
