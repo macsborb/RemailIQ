@@ -1,4 +1,4 @@
-name: Build and deploy ProspectAI backend to Azure Web App
+name: Build and deploy ProspectAI frontend to Azure Web App
 
 on:
   push:
@@ -20,17 +20,17 @@ jobs:
         with:
           node-version: '22.x'
 
-      - name: Install dependencies in backend/
-        working-directory: ./backend
+      - name: Install dependencies in frontend/
+        working-directory: ./frontend
         run: npm install
 
-      - name: Zip backend folder only
-        run: cd backend && zip -r ../release.zip .
+      - name: Zip frontend folder only
+        run: cd frontend && zip -r ../release.zip .
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
-          name: node-backend
+          name: node-frontend
           path: release.zip
 
   deploy:
@@ -44,7 +44,7 @@ jobs:
       - name: Download artifact
         uses: actions/download-artifact@v4
         with:
-          name: node-backend
+          name: node-frontend
 
       - name: Unzip for deployment
         run: unzip release.zip
