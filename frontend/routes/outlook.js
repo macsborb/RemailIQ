@@ -18,8 +18,8 @@ const oauth2 = new AuthorizationCode({
     authorizePath: '/common/oauth2/v2.0/authorize'
   }
 })
-
-const redirectUri = 'https://prospectai-aqhmb7huf0bdfaga.canadacentral-01.azurewebsites.net/outlook/callback'
+// https://prospectai-aqhmb7huf0bdfaga.canadacentral-01.azurewebsites.net/outlook/callback
+const redirectUri = 'http://localhost:3000/outlook/callback'
 
 console.log("Redirect URI envoyée:", redirectUri)
 
