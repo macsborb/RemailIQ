@@ -1,6 +1,45 @@
-<h2>Connexion</h2>
-<form method="post" action="/login">
-  <input name="email" placeholder="Email" required>
-  <input name="password" type="password" placeholder="Mot de passe" required>
-  <button type="submit">Connexion</button>
-</form>
+<!DOCTYPE html>
+<html data-theme="ProspectAI" lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Connexion - ProspectAI</title>
+  <link rel="stylesheet" href="https://unicons.iconscout.com/release/v2.1.9/css/unicons.css">
+  <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <link rel="stylesheet" href="/css/output.css">
+  <script src="/js/index.js" defer></script>
+</head>
+<body class="bg-base-100 text-base-content min-h-screen flex flex-col justify-center items-center">
+  <nav class="navbar bg-base-100 shadow-lg fixed top-0 left-0 right-0 z-50 px-4">
+    <div class="navbar-start">
+      <a href="/" class="btn btn-ghost text-2xl font-extrabold tracking-tight">ProspectAI</a>
+    </div>
+    <div class="navbar-end">
+      <a href="/register" class="btn btn-outline btn-primary">Créer un compte</a>
+    </div>
+  </nav>
+  <main class="flex-1 flex flex-col justify-center items-center w-full pt-32">
+    <div class="card bg-base-200 shadow-xl p-8 rounded-2xl w-full max-w-md animate-fade-in">
+      <h2 class="text-3xl font-bold text-center mb-6">Connexion</h2>
+      <% if (typeof error !== 'undefined' && error) { %>
+        <div class="alert alert-error mb-4"><%= error %></div>
+      <% } %>
+      <form id="form-login" method="POST" action="/login" class="space-y-6">
+        <div class="form-control">
+          <label class="label"><span class="label-text">Email</span></label>
+          <input type="email" name="email" placeholder="Email" class="input input-bordered w-full" required>
+        </div>
+        <div class="form-control">
+          <label class="label"><span class="label-text">Mot de passe</span></label>
+          <input type="password" name="password" placeholder="Mot de passe" class="input input-bordered w-full" required>
+        </div>
+        <button type="submit" class="btn btn-primary w-full text-lg">Se connecter</button>
+      </form>
+      <div class="text-center mt-4">
+        <span class="text-sm">Pas encore de compte ? <a href="/register" class="link link-primary">Créer un compte</a></span>
+      </div>
+    </div>
+  </main>
+</body>
+</html>

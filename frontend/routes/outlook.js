@@ -27,7 +27,7 @@ console.log("Redirect URI envoyée:", redirectUri)
 router.get('/outlook/login', (req, res) => {
   const authUrl = oauth2.authorizeURL({
     redirect_uri: redirectUri,
-    scope: 'https://graph.microsoft.com/User.Read https://graph.microsoft.com/Mail.Read offline_access',
+    scope: 'https://graph.microsoft.com/User.Read https://graph.microsoft.com/Mail.ReadWrite https://graph.microsoft.com/Mail.Send offline_access',
     state: 'secureRandomString',
     prompt: 'select_account'
   })
@@ -44,7 +44,7 @@ router.get('/outlook/callback', async (req, res) => {
     const token = await oauth2.getToken({
       code,
       redirect_uri: redirectUri,
-      scope: 'https://graph.microsoft.com/User.Read https://graph.microsoft.com/Mail.Read offline_access'
+      scope: 'https://graph.microsoft.com/User.Read https://graph.microsoft.com/Mail.ReadWrite https://graph.microsoft.com/Mail.Send offline_access'
     })
 
     req.session.outlookToken = token.token
@@ -62,6 +62,12 @@ router.get('/outlook/callback', async (req, res) => {
     console.error('Erreur lors du callback Outlook :', err)
     res.status(500).send('Erreur OAuth Outlook')
   }
+})
+
+router.get('/outlook/logout', (req, res) => {
+  delete req.session.outlookToken
+  delete req.session.outlookEmail
+  res.json({ success: true, message: 'Déconnecté de Outlook' })
 })
 
 // 📬 Étape 3 : récupérer les emails
@@ -86,28 +92,56 @@ router.get('/outlook/emails', async (req, res) => {
   }
 })
 
-router.get('/outlook/contacts', async (req, res) => {
-  const token = req.session.outlookToken?.access_token
-  if (!token) return res.status(401).json({ error: 'Not authenticated with Outlook' })
+router.get('/outlook/user-email', (req, res) => {
+  const email = req.session.outlookEmail
+  console.log('Email récupéré:', email)
+  if (!email) return res.status(401).json({ error: 'Not authenticated with Outlook' })
+  res.json({ email })
+})
 
-  const client = Client.init({ authProvider: done => done(null, token) })
+router.get('/outlook/contacts', async (req, res) => {
+  const token = req.session.outlookToken?.access_token;
+  if (!token) return res.status(401).json({ error: 'Not authenticated with Outlook' });
+
+  const client = Client.init({ authProvider: done => done(null, token) });
+  // Pagination et limite
+  const offset = parseInt(req.query.offset, 10) || 0;
+  const limit = Math.min(parseInt(req.query.limit, 10) || 100, 1000); // max 1000
 
   try {
-    const messages = await client.api('/me/messages?$top=100').select('from,toRecipients').get()
-
-    const contacts = new Set()
-    for (const msg of messages.value) {
-      if (msg.from?.emailAddress?.address)
-        contacts.add(msg.from.emailAddress.address.toLowerCase())
+    // Récupérer les messages pour extraire les contacts
+    let messages = [];
+    let nextLink = `/me/messages?$top=${limit + offset}&$select=from,toRecipients`;
+    let fetched = 0;
+    while (messages.length < limit + offset && nextLink) {
+      const resp = await client.api(nextLink).get();
+      messages = messages.concat(resp.value);
+      nextLink = resp['@odata.nextLink'] ? resp['@odata.nextLink'] : null;
+      fetched += resp.value.length;
+      if (!nextLink || fetched >= limit + offset) break;
+    }
+    // Extraire les contacts
+    const contacts = new Set();
+    const userEmail = req.session.outlookEmail?.toLowerCase();
+    for (const msg of messages) {
+      if (msg.from?.emailAddress?.address) {
+        const email = msg.from.emailAddress.address.toLowerCase();
+        if (email !== userEmail) contacts.add(email);
+      }
       if (Array.isArray(msg.toRecipients)) {
-        msg.toRecipients.forEach(r => contacts.add(r.emailAddress.address.toLowerCase()))
+        msg.toRecipients.forEach(r => {
+          const email = r.emailAddress.address.toLowerCase();
+          if (email !== userEmail) contacts.add(email);
+        });
       }
     }
-
-    res.json([...contacts])
+    // Pagination sur les contacts
+    const sortedContacts = [...contacts].sort();
+    const paginatedContacts = sortedContacts.slice(offset, offset + limit);
+    res.json({ contacts: paginatedContacts, total: sortedContacts.length, offset, limit });
   } catch (err) {
-    console.error('Erreur récupération contacts:', err)
-    res.status(500).json({ error: 'Erreur récupération contacts' })
+    console.error('Erreur récupération contacts:', err);
+    res.status(500).json({ error: 'Erreur récupération contacts' });
   }
 })
 

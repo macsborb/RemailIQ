@@ -1,0 +1,11 @@
+{
+  "devDependencies": {
+    "daisyui": "^5.0.35"
+  },
+  "dependencies": {
+    "@microsoft/microsoft-graph-client": "^3.0.7",
+    "googleapis": "^149.0.0",
+    "isomorphic-fetch": "^3.0.0",
+    "motion": "^12.12.1"
+  }
+}

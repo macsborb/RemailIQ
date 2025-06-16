@@ -1,18 +1,35 @@
 const express = require('express')
 const router = express.Router()
 
-
+// Route pour vérifier le statut de connexion mail
+router.get('/api/mail-connection-status', (req, res) => {
+  // Vérifier si l'utilisateur est connecté à une boîte mail
+  const isConnected = req.session.outlookEmail || req.session.googleEmail || req.session.appleEmail;
+  
+  res.json({
+      connected: !!isConnected,
+      provider: isConnected ? (req.session.outlookEmail ? 'outlook' : req.session.googleEmail ? 'google' : 'apple') : null
+  });
+});
 
 // Affichage de la page de génération de mail
 router.get('/generate', (req, res) => {
   if (!req.session.userId) {
     return res.redirect('/')
   }
-  res.render('generate', { 
+  // Correction : cohérence des noms de variables de session
+  const outlookConnected = !!req.session.outlookToken;
+  const gmailConnected = !!req.session.gmail_tokens;
+  const isMailConnected = outlookConnected || gmailConnected;
+  res.render('generate', {
+    outlookConnected,
+    outlookEmail: req.session.outlookEmail || '',
+    gmailConnected,
+    gmailEmail: req.session.gmail_email || '',
+    userAvatarUrl: req.session.user_avatar_url || '',
     output: null, 
-    form: null, 
-    outlookConnected: !!req.session.outlookToken,
-    outlookEmail: req.session.outlookEmail || null 
+    form: null,
+    isMailConnected
   })
 })
 

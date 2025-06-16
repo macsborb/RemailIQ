@@ -21,10 +21,20 @@ pool.query('SELECT NOW()', (err, res) => {
     console.log('✅ Connexion à Supabase réussie. Heure actuelle :', res.rows[0].now)
   }
 })
-// Page d’accueil
+// Page d'accueil
 router.get('/', (req, res) => {
-  res.render('index', { error: null })  // passe une variable error
+  res.render('index', { error: null })  // Change pour utiliser la nouvelle page de connexion
 })
+
+// Page de connexion
+router.get('/login', (req, res) => {
+  res.render('login', { error: null });
+});
+
+// Page d'inscription
+router.get('/register', (req, res) => {
+  res.render('register', { error: null });
+});
 
 // Login depuis formulaire sur page d'accueil
 router.post('/login', async (req, res) => {
@@ -55,7 +65,7 @@ router.post('/register', async (req, res) => {
   }
 
   try {
-    // Vérifie que le code email correspond à celui en base et qu’il n’est pas expiré
+    // Vérifie que le code email correspond à celui en base et qu'il n'est pas expiré
     const verif = await pool.query(
       'SELECT * FROM email_verifications WHERE email = $1',
       [email]
@@ -114,9 +124,4 @@ router.post('/logout', (req, res) => {
   })
 })
 
-// Route GET pour générateur
-router.get('/generate', (req, res) => {
-  if (!req.session.userId) return res.redirect('/')
-  res.render('generate')  // Crée ce fichier ensuite
-})
 

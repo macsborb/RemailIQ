@@ -1,6 +1,62 @@
-<h2>Créer un compte</h2>
-<form method="post" action="/register">
-  <input name="email" placeholder="Email" required>
-  <input name="password" type="password" placeholder="Mot de passe" required>
-  <button type="submit">S’inscrire</button>
-</form>
+<!DOCTYPE html>
+<html data-theme="ProspectAI" lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inscription - ProspectAI</title>
+  <link rel="stylesheet" href="https://unicons.iconscout.com/release/v2.1.9/css/unicons.css">
+  <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <link rel="stylesheet" href="/css/output.css">
+  <script src="/js/index.js" defer></script>
+</head>
+<body class="bg-base-100 text-base-content min-h-screen flex flex-col justify-center items-center">
+  <nav class="navbar bg-base-100 shadow-lg fixed top-0 left-0 right-0 z-50 px-4">
+    <div class="navbar-start">
+      <a href="/" class="btn btn-ghost text-2xl font-extrabold tracking-tight">ProspectAI</a>
+    </div>
+    <div class="navbar-end">
+      <a href="/login" class="btn btn-outline btn-primary">Se connecter</a>
+    </div>
+  </nav>
+  <main class="flex-1 flex flex-col justify-center items-center w-full pt-32">
+    <div class="card bg-base-200 shadow-xl p-8 rounded-2xl w-full max-w-md animate-fade-in">
+      <h2 class="text-3xl font-bold text-center mb-6">Créer un compte</h2>
+      <% if (typeof error !== 'undefined' && error) { %>
+        <div class="alert alert-error mb-4"><%= error %></div>
+      <% } %>
+      <div id="success-popup" class="alert alert-success mb-4 hidden">
+        ✅ Votre compte a bien été créé. Vous pouvez maintenant vous connecter.
+      </div>
+      <form id="form-signup" method="POST" action="/register" class="space-y-6">
+        <div id="step1">
+          <div class="form-control">
+            <label class="label"><span class="label-text">Email</span></label>
+            <input type="email" id="reg-email" name="email" placeholder="Email" class="input input-bordered w-full" required>
+          </div>
+          <div class="form-control">
+            <label class="label"><span class="label-text">Mot de passe</span></label>
+            <input type="password" id="reg-password" name="password" placeholder="Mot de passe" class="input input-bordered w-full" required>
+          </div>
+          <div class="form-control">
+            <label class="label"><span class="label-text">Confirmez le mot de passe</span></label>
+            <input type="password" id="reg-confirm" name="confirm_password" placeholder="Confirmez le mot de passe" class="input input-bordered w-full" required>
+          </div>
+          <button type="button" class="btn btn-warning w-full" id="signup-next" onclick="goToStep2()">Suivant</button>
+        </div>
+        <div id="step2" class="space-y-4 hidden swap-off">
+          <p class="text-sm">Un code de vérification a été envoyé à <span id="confirm-email" class="font-bold"></span></p>
+          <input type="text" name="email_code" placeholder="Code reçu par email" class="input input-bordered w-full" required>
+          <button type="button" class="btn btn-success w-full" onclick="submitRegister()">Valider</button>
+        </div>
+      </form>
+      <div class="text-center mt-4">
+        <span class="text-sm">Déjà inscrit ? <a href="/login" class="link link-primary">Se connecter</a></span>
+      </div>
+    </div>
+  </main>
+  <script>
+    // Suppression du script stepper custom, la logique est désormais dans index.js via goToStep2/submitRegister
+  </script>
+</body>
+</html>
